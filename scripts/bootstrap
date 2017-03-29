@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# Sets up the service dev dependancies
+
+# Set up virtualenv
+virtualenv /srv/tweets/.venv
+source /srv/tweets/.venv/bin/activate
+
+# Get python dependancies
+pip3.6 install -Ir /srv/tweets/requirements.txt
