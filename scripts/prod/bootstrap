@@ -27,6 +27,7 @@ ln -sf $(pwd)/prod/nginx.conf /etc/nginx/sites-available/quotes.pereira.io
 ln -sf /etc/nginx/sites-available/quotes.pereira.io /etc/nginx/sites-enabled/quotes.pereira.io
 
 # Link supervisor config
+mkdir -p /var/log/quote-api
 ln -sf $(pwd)/prod/supervisor.conf /etc/supervisor/conf.d/quotes.pereira.io.conf
 
 # Start service

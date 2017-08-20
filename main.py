@@ -1,10 +1,11 @@
 import flask
+from flask import request
 import csv
 import random
 
 app = flask.Flask(__name__)
 
-with open('tweets.csv', 'r') as f:
+with open('tweets.csv', 'r', encoding='utf-8') as f:
     reader = csv.reader(f)
     rows = [row for row in reader]
 
@@ -17,7 +18,9 @@ def get_tech_satire_quote():
     tweet = rows[n]
     screen_name, pretty_name, tweet_id, created_at, text = tweet
 
-    if request.headers['Content-Type'] == 'text/plain':
+
+
+    if 'Content-Type' not in request.headers or request.headers['Content-Type'] == 'text/plain':
         return text + " ~ " + pretty_name
 
     elif request.headers['Content-Type'] == 'application/json':
