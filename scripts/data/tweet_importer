@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+
+import csv
+import argparse
+
+# DB credentials
+DATABASE_URI = os.environ.get('DATABASE_URI')
+
+if DATABASE_URI is None:
+    print("Missing database credentials. Required environment variables:")
+    print("      DATABASE_URI")
+    exit(1)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Imports tweets into the database.')
+    parser.add_argument('file', action="store", help='a file of tweets to import')
+    args = parser.parse_args()
+
+    get_all_tweets(args.handle, args.name)

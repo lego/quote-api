@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+
+import requests
+import json
+import os.path
+import time
+import argparse
+
+DUMP_FILE = 'data/forismatic.json'
+
+def get_quote():
+    resp = requests.get("http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en")
+    if resp.status_code != 200:
+        raise Exception("Bad status code. status_code={}, body={}".format(resp.status_code, resp.body))
+    try:
+        return resp.json()
+    except:
+        print("Error parsing JSON")
+        return None
+
+def dedupe_quotes():
+    print("Starting dedupe")
+    quotes = []
+    if os.path.isfile(DUMP_FILE):
+        print("Loading contents from file.")
+        with open(DUMP_FILE, 'r') as infile:
+            quotes = json.load(infile)
+        print("Qoutes: {}".format(len(quotes)))
+    quotes_dict = {}
+    for quote in quotes:
+        key = quote['quoteLink'].split("/")[-2]
+        quotes_dict[key] = quote
+
+    deduped = list(quotes_dict.values())
+    print("Deduped to {}".format(len(deduped)))
+    print("Finishing. Writing to file.")
+    with open(DUMP_FILE, 'w') as outfile:
+        json.dump(deduped, outfile)
+
+def get_quote_key(quote):
+    return quote['quoteLink'].split("/")[-2]
+
+def scrape_quotes():
+    quotes = {}
+    if os.path.isfile(DUMP_FILE):
+        print("Loading contents from file.")
+        with open(DUMP_FILE, 'r') as infile:
+            quotes = json.load(infile)
+        print("Qoutes: {}".format(len(quotes)))
+    try:
+        while True:
+            # Run ~once per 2 second
+            time.sleep(2)
+            quote = get_quote()
+            if quote is not None:
+                key = get_quote_key(quote)
+                quotes[key] = quote
+                print("Count={}. Got quoteLink={}".format(len(quotes), key))
+    except KeyboardInterrupt:
+        pass
+    except Exception:
+        print("Finishing. Writing to file.")
+        with open(DUMP_FILE, 'w') as outfile:
+            json.dump(quotes, outfile)
+        print("Qoutes: {}".format(len(quotes)))
+        raise
+
+    print("Finishing. Writing to file.")
+    with open(DUMP_FILE, 'w') as outfile:
+        json.dump(quotes, outfile)
+    print("Qoutes: {}".format(len(quotes)))
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Works with forismatic.com API')
+    parser.add_argument('--scrape', action="store_true", default=False, help="Scrapes quotes from forismatic.com")
+    parser.add_argument('--dedupe', action="store_true", default=False, help="Runs the deduper")
+    args = parser.parse_args()
+
+    if args.scrape and args.dedupe:
+        parser.print_help()
+        exit(1)
+    elif args.scrape:
+        scrape_quotes()
+    elif args.dedupe:
+        dedupe_quotes()
+    else:
+        parser.print_help()

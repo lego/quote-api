@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+
+import requests
+import json
+import os.path
+import time
+import argparse
+
+FILENAME = "data/forbes_thoughtapi.json"
+
+def get_quotes(thoughtId):
+    resp = requests.get("https://www.forbes.com/forbesapi/thought/uri.json?enrich=true&query={thoughtId}&relatedlimit=1000".format(thoughtId=thoughtId))
+    if resp.status_code != 200:
+        raise Exception("Bad status code. status_code={}, body={}".format(resp.status_code, resp.body))
+    try:
+        quotes = []
+        data = resp.json()['thought']
+        quotes += data['relatedAuthorThoughts']
+        quotes += data['relatedThemeThoughts']
+
+        del data['relatedThemeThoughts']
+        del data['relatedAuthorThoughts']
+        quotes.append(data)
+        return quotes
+    except Exception as e:
+        print("Error parsing JSON")
+        return []
+
+def get_quote_key(quote):
+    return quote['naturalId']
+
+def scrape_quotes():
+    quotes = {}
+    if os.path.isfile(FILENAME):
+        print("Loading contents from file.")
+        with open(FILENAME, 'r') as infile:
+            quotes = json.load(infile)
+        print("Qoutes: {}".format(len(quotes)))
+    try:
+        i = 0
+        while True:
+            i += 1
+            if str(i) in quotes:
+                continue
+            qs = get_quotes(i)
+            for quote in qs:
+                key = get_quote_key(quote)
+                quotes[key] = quote
+            print("Count={}. Got naturalId={}".format(len(quotes), i))
+    except KeyboardInterrupt:
+        pass
+    except Exception:
+        print("Finishing. Writing to file.")
+        with open(FILENAME, 'w') as outfile:
+            json.dump(quotes, outfile)
+        print("Qoutes: {}".format(len(quotes)))
+        raise
+
+    print("Finishing. Writing to file.")
+    with open(FILENAME, 'w') as outfile:
+        json.dump(quotes, outfile)
+    print("Qoutes: {}".format(len(quotes)))
+
+if __name__ == "__main__":
+    scrape_quotes()
