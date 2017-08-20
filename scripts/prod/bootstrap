@@ -16,18 +16,18 @@ python3.6 /tmp/get-pip.py
 
 # Set up virtualenv
 pip3.6 install virtualenv
-virtualenv /srv/tweets/.venv
-source /srv/tweets/.venv/bin/activate
+virtualenv $(pwd)/.venv
+source $(pwd)/.venv/bin/activate
 
 # Get python dependancies
-pip3.6 install -Ir /srv/tweets/requirements.txt
+pip3.6 install -Ir $(pwd)/requirements.txt
 
 # Link nginx config
-ln -sf /srv/tweets/prod/nginx.conf /etc/nginx/sites-available/tweets
-ln -sf /etc/nginx/sites-available/tweets /etc/nginx/sites-enabled/tweets
+ln -sf $(pwd)/prod/nginx.conf /etc/nginx/sites-available/quotes.pereira.io
+ln -sf /etc/nginx/sites-available/quotes.pereira.io /etc/nginx/sites-enabled/quotes.pereira.io
 
 # Link supervisor config
-ln -sf /srv/tweets/prod/supervisor.conf /etc/supervisor/conf.d/tweets.conf
+ln -sf $(pwd)/prod/supervisor.conf /etc/supervisor/conf.d/quotes.pereira.io.conf
 
 # Start service
 supervisorctl reread
