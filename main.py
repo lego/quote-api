@@ -10,6 +10,7 @@ with open('tweets.csv', 'r') as f:
 
 count = len(rows)
 
+@app.route('/')
 @app.route('/tweets/tech_satire')
 def get_tech_satire_quote():
     n = random.randrange(count)
